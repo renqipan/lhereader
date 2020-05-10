@@ -35,6 +35,13 @@ class Particle:
     def pt(self):
         return self.p4.Pt()
     
+    @property
+    def phi(self):
+        return self.p4.Phi()
+
+    @property
+    def Costheta(self):
+        return self.p4.CosTheta()
     
 class Event:
     def __init__(self,num_particles):
