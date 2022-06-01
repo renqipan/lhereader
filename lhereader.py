@@ -2,14 +2,19 @@ import xml.etree.ElementTree as ET
 from ROOT import TLorentzVector
 
 class Particle:
-    def __init__(self,pdgid,spin,px=0,py=0,pz=0,energy=0,mass=0):
+    def __init__(self,pdgid,status,spin,mother1,mother2,gmother1,gmother2,px=0,py=0,pz=0,energy=0,mass=0):
         self.pdgid=pdgid
         self.px=px
         self.py=py
         self.pz=pz
         self.energy=energy
         self.mass=mass
-        self.spin=spin    
+        self.spin=spin
+        self.mother1=mother1
+        self.mother2=mother2
+        self.gmother1=gmother1
+        self.gmother2=gmother2
+        self.status=status    
     
     @property
     def p4(self):
@@ -35,6 +40,13 @@ class Particle:
     def pt(self):
         return self.p4.Pt()
     
+    @property
+    def phi(self):
+        return self.p4.Phi()
+
+    @property
+    def Costheta(self):
+        return self.p4.CosTheta()
     
 class Event:
     def __init__(self,num_particles):
@@ -79,7 +91,26 @@ def readLHEF(name):
             e=Event(num_part)
             for i in range(1,num_part+1):
                 part_data=lines[i].strip().split()
-                p=Particle(int(part_data[0]), float(part_data[12]), float(part_data[6]), float(part_data[7]), float(part_data[8]), float(part_data[9]), float(part_data[10]))
+                mother1_index=int(part_data[2])
+                mother2_index=int(part_data[3])
+                if mother1_index==0:
+                    mother1=0
+                    mother2=0
+                    gmother1=0
+                    gmother2=0
+                else:
+                    mother1=lines[mother1_index].strip().split()[0]
+                    mother2=lines[mother2_index].strip().split()[0]
+                    grand1_index=int(lines[mother1_index].strip().split()[2])
+                    grand2_index=int(lines[mother1_index].strip().split()[3])
+                    if grand1_index==0:
+                        gmother1=0
+                        gmother2=0
+                    else:
+                        gmother1=lines[grand1_index].strip().split()[0]
+                        gmother2=lines[grand2_index].strip().split()[0]
+
+                p=Particle(int(part_data[0]),int(part_data[1]), float(part_data[12]),int(mother1),int(mother2),int(gmother1),int(gmother2), float(part_data[6]), float(part_data[7]), float(part_data[8]), float(part_data[9]), float(part_data[10]))
                 e.__addParticle__(p)
             lhefdata.__addEvent__(e)
     
